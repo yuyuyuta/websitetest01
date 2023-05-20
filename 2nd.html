@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>人工生命</title>
+</head>
+<body>
+<canvas id="canvas" width="400" height="400"></canvas>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.12.0/p5.min.js"></script>
+<script>
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+var objects = [];
+
+function setup() {
+  // オブジェクトを生成します。
+  objects.push({
+    type: "red",
+    x: 100,
+    y: 100,
+    speed: 2,
+    food: 100,
+    energy: 100,
+  });
+  objects.push({
+    type: "blue",
+    x: 200,
+    y: 200,
+    speed: 1,
+    food: 100,
+    energy: 100,
+  });
+
+  // 環境を更新するタイマーを設定します。
+  window.setInterval(update, 1000);
+}
+
+function update() {
+  // 各オブジェクトを更新します。
+  objects.forEach(function(object) {
+    object.update();
+  });
+
+  // キャンバスにオブジェクトを描画します。
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  objects.forEach(function(object) {
+    object.draw(ctx);
+  });
+}
+
+// オブジェクトの更新関数。
+function Object.prototype.update() {
+  // オブジェクトの位置を更新します。
+  this.x += this.dx;
+  this.y += this.dy;
+
+  // オブジェクトが壁にぶつかったときの処理。
+  if (this.x < 0 || this.x >= canvas.width) {
+    this.dx = -this.dx;
+  }
+  if (this.y < 0 || this.y >= canvas.height) {
+    this.dy = -this.dy;
+  }
+
+  // オブジェクトが他のオブジェクトにぶつかったときの処理。
+  objects.forEach(function(other) {
+    if (this !== other) {
+      if (this.x == other.x && this.y == other.y) {
+        if (this.type == "red" && other.type == "blue") {
+          this.food++;
+          other.food--;
+        } else if (this.type == "blue" && other.type == "red") {
+          other.food++;
+          this.food--;
+        }
+      }
+    }
+  }, this);
+
+  // オブジェクトが食べ物を食べたときの処理。
+  if (this.food > 0) {
+    this.food--;
+  } else {
+    this.energy--;
+  }
+
+  // オブジェクトがエネルギーがなくなったときの処理。
+  if (this.energy <= 0) {
+    this.die();
+  }
+}
+
+// オブジェクトの描画関数。
+function Object.prototype.draw(ctx) {
+  var radius = 10;
+  ctx.fillStyle = this.type == "red" ? "red" : "blue";
+  ctx.fillRect(this.x - radius, this.y - radius, 2 * radius, 2 * radius);
+}
+
+// オブジェクトの死亡関数。
+function Object.prototype.die() {
+  objects.splice(objects.indexOf(this), 1);
+}
+
+setup();
+</script>
+</body>
+</html>
